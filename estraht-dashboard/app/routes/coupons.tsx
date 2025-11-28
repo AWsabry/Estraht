@@ -1,12 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { api, type Coupon } from '../lib/api';
-import { Search, Plus, Edit, Trash2, Ticket, CheckCircle, XCircle, Calendar } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Ticket, CheckCircle, XCircle, Calendar, X } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 
 export default function Coupons() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [formData, setFormData] = useState({
+    coupon_code: '',
+    coupon_value: '',
+    valid_until: '',
+    one_use: false,
+    number_of_uses: 1,
+    for_user: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchCoupons();
@@ -41,6 +52,44 @@ export default function Coupons() {
     }
   };
 
+  const handleCreateCoupon = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSubmitting(true);
+
+    try {
+      const couponData = {
+        coupon_code: formData.coupon_code,
+        coupon_value: formData.coupon_value || null,
+        valid_until: formData.valid_until,
+        one_use: formData.one_use,
+        number_of_uses: formData.one_use ? 1 : formData.number_of_uses,
+        for_user: formData.for_user || null,
+      };
+
+      const response: any = await api.coupons.create(couponData);
+      
+      if (response.success) {
+        setShowCreateModal(false);
+        setFormData({
+          coupon_code: '',
+          coupon_value: '',
+          valid_until: '',
+          one_use: false,
+          number_of_uses: 1,
+          for_user: '',
+        });
+        fetchCoupons();
+      } else {
+        setError(response.message || 'Failed to create coupon');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while creating the coupon');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const activeCoupons = coupons.filter(
     (c) => !c.is_used && new Date(c.valid_until) > new Date()
   );
@@ -60,7 +109,10 @@ export default function Coupons() {
           <h1 className="text-3xl font-bold text-gray-900">Coupons Management</h1>
           <p className="text-gray-600 mt-1">Create and manage discount coupons</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+        <button 
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-[#204FCF] text-white rounded-lg hover:bg-[#1a3fa6] transition-colors"
+        >
           <Plus className="w-5 h-5" />
           Add Coupon
         </button>
@@ -74,8 +126,8 @@ export default function Coupons() {
               <p className="text-sm text-gray-600">Total Coupons</p>
               <p className="text-2xl font-bold text-gray-900">{coupons.length}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <Ticket className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-[#e8edfc] rounded-full flex items-center justify-center">
+              <Ticket className="w-6 h-6 text-[#204FCF]" />
             </div>
           </div>
         </div>
@@ -123,7 +175,7 @@ export default function Coupons() {
             placeholder="Search by coupon code or user..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
           />
         </div>
       </div>
@@ -176,7 +228,7 @@ export default function Coupons() {
                       <tr key={coupon.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            <Ticket className="w-5 h-5 text-blue-600" />
+                            <Ticket className="w-5 h-5 text-[#204FCF]" />
                             <div>
                               <div className="text-sm font-semibold text-gray-900">
                                 {coupon.coupon_code}
@@ -238,7 +290,7 @@ export default function Coupons() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex gap-2">
-                            <button className="text-blue-600 hover:text-blue-900">
+                            <button className="text-[#204FCF] hover:text-[#1a3fa6]">
                               <Edit className="w-5 h-5" />
                             </button>
                             <button
@@ -258,6 +310,167 @@ export default function Coupons() {
           </div>
         )}
       </div>
+
+      {/* Create Coupon Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-white bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-2xl font-bold text-gray-900">Create New Coupon</h2>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setError('');
+                  setFormData({
+                    coupon_code: '',
+                    coupon_value: '',
+                    valid_until: '',
+                    one_use: false,
+                    number_of_uses: 1,
+                    for_user: '',
+                  });
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCoupon} className="p-6 space-y-6">
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Coupon Code */}
+                <div>
+                  <label htmlFor="coupon_code" className="block text-sm font-medium text-gray-700 mb-2">
+                    Coupon Code *
+                  </label>
+                  <input
+                    type="text"
+                    id="coupon_code"
+                    required
+                    value={formData.coupon_code}
+                    onChange={(e) => setFormData({ ...formData, coupon_code: e.target.value.toUpperCase() })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    placeholder="SUMMER2024"
+                  />
+                </div>
+
+                {/* Coupon Value */}
+                <div>
+                  <label htmlFor="coupon_value" className="block text-sm font-medium text-gray-700 mb-2">
+                    Discount Value
+                  </label>
+                  <input
+                    type="text"
+                    id="coupon_value"
+                    value={formData.coupon_value}
+                    onChange={(e) => setFormData({ ...formData, coupon_value: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    placeholder="10% or $10"
+                  />
+                </div>
+
+                {/* Valid Until */}
+                <div>
+                  <label htmlFor="valid_until" className="block text-sm font-medium text-gray-700 mb-2">
+                    Valid Until *
+                  </label>
+                  <input
+                    type="date"
+                    id="valid_until"
+                    required
+                    value={formData.valid_until}
+                    onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                  />
+                </div>
+
+                {/* For User */}
+                <div>
+                  <label htmlFor="for_user" className="block text-sm font-medium text-gray-700 mb-2">
+                    For User (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    id="for_user"
+                    value={formData.for_user}
+                    onChange={(e) => setFormData({ ...formData, for_user: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    placeholder="User ID or email"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Leave empty for all users</p>
+                </div>
+              </div>
+
+              {/* One Use Toggle */}
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="one_use"
+                  checked={formData.one_use}
+                  onChange={(e) => setFormData({ ...formData, one_use: e.target.checked })}
+                  className="w-5 h-5 text-[#204FCF] border-gray-300 rounded focus:ring-[#204FCF]"
+                />
+                <label htmlFor="one_use" className="text-sm font-medium text-gray-700">
+                  One-time use only
+                </label>
+              </div>
+
+              {/* Number of Uses */}
+              {!formData.one_use && (
+                <div>
+                  <label htmlFor="number_of_uses" className="block text-sm font-medium text-gray-700 mb-2">
+                    Number of Uses
+                  </label>
+                  <input
+                    type="number"
+                    id="number_of_uses"
+                    min="1"
+                    value={formData.number_of_uses}
+                    onChange={(e) => setFormData({ ...formData, number_of_uses: parseInt(e.target.value) || 1 })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                  />
+                </div>
+              )}
+
+              {/* Form Actions */}
+              <div className="flex items-center justify-end gap-4 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setError('');
+                    setFormData({
+                      coupon_code: '',
+                      coupon_value: '',
+                      valid_until: '',
+                      one_use: false,
+                      number_of_uses: 1,
+                      for_user: '',
+                    });
+                  }}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-6 py-2 bg-[#204FCF] text-white rounded-lg hover:bg-[#1a3fa6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submitting ? 'Creating...' : 'Create Coupon'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
     </DashboardLayout>
   );

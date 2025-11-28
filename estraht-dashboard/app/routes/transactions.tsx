@@ -100,8 +100,8 @@ export default function Transactions() {
               <p className="text-sm text-gray-600">Total Amount</p>
               <p className="text-2xl font-bold text-gray-900">${totalAmount.toFixed(2)}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-[#e8edfc] rounded-full flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-[#204FCF]" />
             </div>
           </div>
         </div>
@@ -150,13 +150,13 @@ export default function Transactions() {
               placeholder="Search by doctor ID, patient ID, or booking ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
             />
           </div>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
           >
             <option value="all">All Status</option>
             <option value="success">Success</option>

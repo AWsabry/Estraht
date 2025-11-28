@@ -50,7 +50,7 @@ export default function Users() {
           <h1 className="text-3xl font-bold text-gray-900">Users Management</h1>
           <p className="text-gray-600 mt-1">Manage admin users and their permissions</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2 bg-[#204FCF] text-white rounded-lg hover:bg-[#1a3fa6] transition-colors">
           <UserPlus className="w-5 h-5" />
           Add User
         </button>
@@ -64,8 +64,8 @@ export default function Users() {
               <p className="text-sm text-gray-600">Total Users</p>
               <p className="text-2xl font-bold text-gray-900">{users.length}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <UserPlus className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-[#e8edfc] rounded-full flex items-center justify-center">
+              <UserPlus className="w-6 h-6 text-[#204FCF]" />
             </div>
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function Users() {
             placeholder="Search by email or name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
           />
         </div>
       </div>
@@ -152,8 +152,8 @@ export default function Users() {
                     <tr key={user.user_id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span className="text-blue-600 font-semibold">
+                          <div className="w-10 h-10 bg-[#e8edfc] rounded-full flex items-center justify-center">
+                            <span className="text-[#204FCF] font-semibold">
                               {user.full_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                             </span>
                           </div>
@@ -195,7 +195,7 @@ export default function Users() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                          <button className="text-blue-600 hover:text-blue-900">
+                          <button className="text-[#204FCF] hover:text-[#1a3fa6]">
                             <Edit className="w-5 h-5" />
                           </button>
                           <button

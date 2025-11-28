@@ -8,6 +8,7 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -21,16 +22,38 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap",
+  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const saved = localStorage.getItem('language');
+                  const lang = (saved === 'en' || saved === 'ar') ? saved : 'en';
+                  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+                  document.documentElement.lang = lang;
+                } catch (e) {
+                  // localStorage not available, use default
+                  document.documentElement.dir = 'ltr';
+                  document.documentElement.lang = 'en';
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body>
         {children}
@@ -42,7 +65,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <LanguageProvider>
+      <Outlet />
+    </LanguageProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { api, type Patient } from '../lib/api';
-import { Search, Edit, Trash2, UserPlus, Users } from 'lucide-react';
+import { Search, Edit, Trash2, UserPlus, Users, Eye } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 
 export default function Patients() {
@@ -54,7 +55,7 @@ export default function Patients() {
           <h1 className="text-3xl font-bold text-gray-900">Patients Management</h1>
           <p className="text-gray-600 mt-1">Manage patient records and information</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2 bg-[#204FCF] text-white rounded-lg hover:bg-[#1a3fa6] transition-colors">
           <UserPlus className="w-5 h-5" />
           Add Patient
         </button>
@@ -68,8 +69,8 @@ export default function Patients() {
               <p className="text-sm text-gray-600">Total Patients</p>
               <p className="text-2xl font-bold text-gray-900">{patients.length}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <Users className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-[#e8edfc] rounded-full flex items-center justify-center">
+              <Users className="w-6 h-6 text-[#204FCF]" />
             </div>
           </div>
         </div>
@@ -106,7 +107,7 @@ export default function Patients() {
             placeholder="Search by name, email, or phone..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
           />
         </div>
       </div>
@@ -205,12 +206,20 @@ export default function Patients() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                          <button className="text-blue-600 hover:text-blue-900">
+                          <Link
+                            to={`/patients/${patient.id}`}
+                            className="text-green-600 hover:text-green-900"
+                            title="View Profile"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </Link>
+                          <button className="text-[#204FCF] hover:text-[#1a3fa6]" title="Edit">
                             <Edit className="w-5 h-5" />
                           </button>
                           <button
                             onClick={() => handleDelete(patient.id)}
                             className="text-red-600 hover:text-red-900"
+                            title="Delete"
                           >
                             <Trash2 className="w-5 h-5" />
                           </button>

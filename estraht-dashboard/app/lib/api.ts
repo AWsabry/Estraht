@@ -22,6 +22,14 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
 // API client
 export const api = {
+  // Auth
+  auth: {
+    login: (email: string, password: string) => apiFetch('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    }),
+  },
+
   // Doctors
   doctors: {
     getAll: () => apiFetch('/doctors'),
@@ -124,6 +132,25 @@ export const api = {
     }),
     delete: (id: string) => apiFetch(`/bookings/${id}`, { method: 'DELETE' }),
     getStats: () => apiFetch('/bookings/stats'),
+  },
+
+  // Reviews
+  reviews: {
+    getAll: () => apiFetch('/reviews'),
+    getById: (id: string) => apiFetch(`/reviews/${id}`),
+    getByBooking: (bookingId: string) => apiFetch(`/reviews/booking/${bookingId}`),
+    getByDoctor: (doctorId: string) => apiFetch(`/reviews/doctor/${doctorId}`),
+    getByPatient: (patientId: string) => apiFetch(`/reviews/patient/${patientId}`),
+    create: (data: Partial<Review>) => apiFetch('/reviews', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    update: (id: string, data: Partial<Review>) => apiFetch(`/reviews/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+    delete: (id: string) => apiFetch(`/reviews/${id}`, { method: 'DELETE' }),
+    getStats: () => apiFetch('/reviews/stats'),
   },
 };
 
@@ -233,4 +260,14 @@ export type Bookings = {
     phone: string | null;
     profile_img_url: string | null;
   };
+};
+
+export type Review = {
+  id: string;
+  booking_id: string;
+  patient_id: string;
+  doctor_id: string;
+  rating: string;
+  comment: string;
+  created_at: string;
 };

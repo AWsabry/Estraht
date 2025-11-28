@@ -120,7 +120,7 @@ export default function Appointments() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { icon: Clock, color: 'bg-yellow-100 text-yellow-800', label: 'Pending' },
-      confirmed: { icon: CheckCircle, color: 'bg-blue-100 text-blue-800', label: 'Confirmed' },
+      confirmed: { icon: CheckCircle, color: 'bg-[#e8edfc] text-[#204FCF]', label: 'Confirmed' },
       cancelled: { icon: XCircle, color: 'bg-red-100 text-red-800', label: 'Cancelled' },
       completed: { icon: CheckCircle, color: 'bg-green-100 text-green-800', label: 'Completed' },
     };
@@ -152,7 +152,7 @@ export default function Appointments() {
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 bg-[#204FCF] text-white px-4 py-2 rounded-lg hover:bg-[#1a3fa6] transition-colors"
           >
             <Plus className="w-5 h-5" />
             Book an Appointment
@@ -167,8 +167,8 @@ export default function Appointments() {
                 <p className="text-sm text-gray-600">Total</p>
                 <p className="text-2xl font-bold text-gray-900">{appointments.length}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-[#e8edfc] rounded-full flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-[#204FCF]" />
               </div>
             </div>
           </div>
@@ -189,8 +189,8 @@ export default function Appointments() {
                 <p className="text-sm text-gray-600">Confirmed</p>
                 <p className="text-2xl font-bold text-gray-900">{confirmedCount}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-[#e8edfc] rounded-full flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-[#204FCF]" />
               </div>
             </div>
           </div>
@@ -217,13 +217,13 @@ export default function Appointments() {
                 placeholder="Search by doctor, patient, or time slot..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
               />
             </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -339,7 +339,7 @@ export default function Appointments() {
                             <select
                               value={appointment.status}
                               onChange={(e) => handleStatusChange(appointment.id, e.target.value)}
-                              className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
                             >
                               <option value="pending">Pending</option>
                               <option value="confirmed">Confirmed</option>
@@ -365,51 +365,80 @@ export default function Appointments() {
 
         {/* Create Appointment Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <div className="flex items-center justify-between mb-4">
+          <div 
+            className="fixed inset-0 bg-white bg-opacity-80 backdrop-blur-md flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowCreateModal(false);
+              }
+            }}
+          >
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
                 <h2 className="text-xl font-bold text-gray-900">Create New Appointment</h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 hover:text-gray-700 transition-colors p-1 hover:bg-gray-100 rounded"
                 >
                   <X className="w-6 h-6" />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateAppointment} className="space-y-4">
+              <form onSubmit={handleCreateAppointment} className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Doctor
                   </label>
                   <select
                     required
                     value={formData.doctor_id}
                     onChange={(e) => setFormData({ ...formData, doctor_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] appearance-none"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.5em 1.5em',
+                      paddingRight: '2.5rem'
+                    }}
                   >
-                    <option value="">Select a doctor</option>
+                    <option value="" className="text-gray-900 bg-white">Select a doctor</option>
                     {doctors.map((doctor) => (
-                      <option key={doctor.doctor_id} value={doctor.doctor_id}>
-                        {doctor.full_name} - {doctor.specialization}
+                      <option 
+                        key={doctor.doctor_id} 
+                        value={doctor.doctor_id}
+                        className="text-gray-900 bg-white"
+                      >
+                        {doctor.full_name} - {doctor.email}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Patient
                   </label>
                   <select
                     required
                     value={formData.patient_id}
                     onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] appearance-none"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.5em 1.5em',
+                      paddingRight: '2.5rem'
+                    }}
                   >
-                    <option value="">Select a patient</option>
+                    <option value="" className="text-gray-900 bg-white">Select a patient</option>
                     {patients.map((patient) => (
-                      <option key={patient.id} value={patient.id}>
+                      <option 
+                        key={patient.id} 
+                        value={patient.id}
+                        className="text-gray-900 bg-white"
+                      >
                         {patient.name} - {patient.email}
                       </option>
                     ))}
@@ -417,7 +446,7 @@ export default function Appointments() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Appointment Date
                   </label>
                   <input
@@ -425,12 +454,12 @@ export default function Appointments() {
                     required
                     value={formData.booking_date}
                     onChange={(e) => setFormData({ ...formData, booking_date: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Time Slot
                   </label>
                   <input
@@ -438,23 +467,23 @@ export default function Appointments() {
                     required
                     value={formData.booking_time}
                     onChange={(e) => setFormData({ ...formData, booking_time: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
                   />
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-4 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="flex-1 px-4 py-2 bg-[#204FCF] text-white rounded-lg hover:bg-[#1a3fa6] transition-colors font-medium"
                   >
-                    Create
+                    Create Appointment
                   </button>
                 </div>
               </form>

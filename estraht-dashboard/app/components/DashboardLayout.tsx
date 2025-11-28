@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router';
+import { useState, useEffect } from 'react';
+import type { CSSProperties } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router';
 import {
   Users,
   UserCog,
@@ -11,27 +12,83 @@ import {
   X,
   LayoutDashboard,
   Calendar,
+  Star,
+  LogOut,
+  Globe,
+  ChevronDown,
 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import logoImage from '../assets/Images/logo.png';
 
 type MenuItem = {
-  name: string;
+  nameKey: string;
   path: string;
   icon: React.ComponentType<{ className?: string }>;
 };
 
 const menuItems: MenuItem[] = [
-  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Users', path: '/users', icon: Users },
-  { name: 'Doctors', path: '/doctors', icon: Stethoscope },
-  { name: 'Patients', path: '/patients', icon: UserRound },
-  { name: 'Bookings', path: '/bookings', icon: Calendar },
-  { name: 'Transactions', path: '/transactions', icon: CreditCard },
-  { name: 'Coupons', path: '/coupons', icon: Ticket },
+  { nameKey: 'nav.dashboard', path: '/', icon: LayoutDashboard },
+  { nameKey: 'nav.users', path: '/users', icon: Users },
+  { nameKey: 'nav.doctors', path: '/doctors', icon: Stethoscope },
+  { nameKey: 'nav.patients', path: '/patients', icon: UserRound },
+  { nameKey: 'nav.bookings', path: '/bookings', icon: Calendar },
+  { nameKey: 'nav.transactions', path: '/transactions', icon: CreditCard },
+  { nameKey: 'nav.coupons', path: '/coupons', icon: Ticket },
+  { nameKey: 'nav.reviews', path: '/reviews', icon: Star },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { language, setLanguage, t, isRTL } = useLanguage();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showLanguageMenu && !target.closest('.language-selector')) {
+        setShowLanguageMenu(false);
+      }
+    };
+
+    if (showLanguageMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showLanguageMenu]);
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user');
+      localStorage.removeItem('isAuthenticated');
+    }
+    navigate('/login');
+  };
+
+  // Ensure order styles are applied correctly for RTL
+  const sidebarOrder: CSSProperties = { 
+    order: isRTL ? 1 : 2,
+  };
+  console.log(isRTL);
+  const mainOrder: CSSProperties = { 
+    order: isRTL ? 1 : 2,
+  };
+
+  console.log(mainOrder);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -39,25 +96,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside
         className={`${
           isSidebarOpen ? 'w-64' : 'w-20'
-        } bg-white shadow-lg transition-all duration-300 ease-in-out`}
+        } bg-white ${isRTL ? 'shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)]' : 'shadow-lg'} transition-all duration-300 ease-in-out`}
+        style={sidebarOrder}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
-            {isSidebarOpen && (
-              <h1 className="text-xl font-bold text-gray-800">Estraht Admin</h1>
+          <div className={`flex items-center justify-between p-4 border-b ${isRTL ? 'flex-row-reverse' : ''}`}>
+            {isSidebarOpen ? (
+              <img 
+                src={logoImage} 
+                alt="Estraht Admin" 
+                className="h-20 object-contain"
+              />
+            ) : (
+              <img 
+                src={logoImage} 
+                alt="Estraht Admin" 
+                className="h-8 w-8 object-contain mx-auto"
+              />
             )}
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Toggle sidebar"
-            >
-              {isSidebarOpen ? (
-                <X className="w-6 h-6 text-gray-600" />
-              ) : (
-                <Menu className="w-6 h-6 text-gray-600" />
-              )}
-            </button>
+
           </div>
 
           {/* Navigation */}
@@ -72,13 +130,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   to={item.path}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-blue-500 text-white'
+                      ? 'bg-[#204FCF] text-white'
                       : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                  } ${isRTL ? 'flex-row-reverse' : ''}`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   {isSidebarOpen && (
-                    <span className="font-medium">{item.name}</span>
+                    <span className="font-medium">{t(item.nameKey)}</span>
                   )}
                 </Link>
               );
@@ -86,24 +144,78 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t">
-            <div className="flex items-center gap-3">
+          <div className="p-4 border-t space-y-2">
+            {/* Language Selector */}
+            {isSidebarOpen && (
+              <div className="relative mb-2 language-selector">
+                <button
+                  onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                  className={`w-full flex items-center justify-between gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+                >
+                  <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <Globe className="w-4 h-4" />
+                    <span>{language === 'en' ? 'English' : 'العربية'}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageMenu ? 'rotate-180' : ''}`} />
+                </button>
+                {showLanguageMenu && (
+                  <div className={`absolute bottom-full mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 ${isRTL ? 'left-0 right-auto' : 'left-0 right-0'}`}>
+                    <button
+                      onClick={() => {
+                        setLanguage('en');
+                        setShowLanguageMenu(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors ${isRTL ? 'flex-row-reverse' : ''} ${language === 'en' ? 'bg-[#e8edfc]' : ''}`}
+                    >
+                      <span>English</span>
+                      {language === 'en' && <span className="text-[#204FCF]">✓</span>}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLanguage('ar');
+                        setShowLanguageMenu(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors ${isRTL ? 'flex-row-reverse' : ''} ${language === 'ar' ? 'bg-[#e8edfc]' : ''}`}
+                    >
+                      <span>العربية</span>
+                      {language === 'ar' && <span className="text-[#204FCF]">✓</span>}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                 <UserCog className="w-6 h-6 text-gray-600" />
               </div>
               {isSidebarOpen && (
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-800">Admin</p>
-                  <p className="text-xs text-gray-500">admin@estraht.com</p>
+                  <p className="text-sm font-medium text-gray-800">
+                    {user?.full_name || 'Admin'}
+                  </p>
+                  <p className="text-xs text-gray-500">{user?.email || 'admin@estraht.com'}</p>
                 </div>
               )}
             </div>
+            {isSidebarOpen && (
+              <button
+                onClick={handleLogout}
+                className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+              >
+                <LogOut className="w-4 h-4" />
+                {t('common.logout')}
+              </button>
+            )}
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main 
+        className={`flex-1 overflow-auto ${isRTL ? 'font-arabic' : ''}`} 
+        dir={isRTL ? 'rtl' : 'ltr'}
+        style={mainOrder}
+      >
         <div className="p-8">
           {children}
         </div>
