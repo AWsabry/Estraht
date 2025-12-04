@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { api, type Coupon } from '../lib/api';
 import { Search, Plus, Edit, Trash2, Ticket, CheckCircle, XCircle, Calendar, X } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Coupons() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -18,6 +19,7 @@ export default function Coupons() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const { t, isRTL } = useLanguage();
 
   useEffect(() => {
     fetchCoupons();
@@ -42,7 +44,7 @@ export default function Coupons() {
   );
 
   const handleDelete = async (couponId: string) => {
-    if (!confirm('Are you sure you want to delete this coupon?')) return;
+    if (!confirm(t('coupons.deleteConfirm') || t('users.deleteConfirm'))) return;
 
     try {
       await api.coupons.delete(couponId);
@@ -106,15 +108,15 @@ export default function Coupons() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Coupons Management</h1>
-          <p className="text-gray-600 mt-1">Create and manage discount coupons</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('coupons.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('coupons.subtitle')}</p>
         </div>
         <button 
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-[#204FCF] text-white rounded-lg hover:bg-[#1a3fa6] transition-colors"
         >
           <Plus className="w-5 h-5" />
-          Add Coupon
+          {t('coupons.addCoupon')}
         </button>
       </div>
 
@@ -123,7 +125,7 @@ export default function Coupons() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Coupons</p>
+              <p className="text-sm text-gray-600">{t('coupons.total')}</p>
               <p className="text-2xl font-bold text-gray-900">{coupons.length}</p>
             </div>
             <div className="w-12 h-12 bg-[#e8edfc] rounded-full flex items-center justify-center">
@@ -134,7 +136,7 @@ export default function Coupons() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Active</p>
+              <p className="text-sm text-gray-600">{t('coupons.active')}</p>
               <p className="text-2xl font-bold text-gray-900">{activeCoupons.length}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -145,7 +147,7 @@ export default function Coupons() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Used</p>
+              <p className="text-sm text-gray-600">{t('coupons.used')}</p>
               <p className="text-2xl font-bold text-gray-900">{usedCoupons.length}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
@@ -156,7 +158,7 @@ export default function Coupons() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Expired</p>
+              <p className="text-sm text-gray-600">{t('coupons.expired')}</p>
               <p className="text-2xl font-bold text-gray-900">{expiredCoupons.length}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
@@ -169,13 +171,19 @@ export default function Coupons() {
       {/* Search Bar */}
       <div className="bg-white p-4 rounded-lg shadow">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search
+            className={`absolute top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 ${
+              isRTL ? 'right-3' : 'left-3'
+            }`}
+          />
           <input
             type="text"
-            placeholder="Search by coupon code or user..."
+            placeholder={t('coupons.search')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
+            className={`w-full py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF] ${
+              isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'
+            }`}
           />
         </div>
       </div>
@@ -183,32 +191,32 @@ export default function Coupons() {
       {/* Coupons Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading coupons...</div>
+          <div className="p-8 text-center text-gray-500">{t('common.loading')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Coupon Code
+                    {t('coupons.table.code')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Value
+                    {t('coupons.table.value')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    For User
+                    {t('coupons.table.forUser')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Valid Until
+                    {t('coupons.table.validUntil')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Usage
+                    {t('coupons.table.usage')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t('coupons.table.status')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    {t('common.actions')}
                   </th>
                 </tr>
               </thead>
@@ -216,7 +224,7 @@ export default function Coupons() {
                 {filteredCoupons.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                      No coupons found
+                      {t('coupons.empty')}
                     </td>
                   </tr>
                 ) : (
@@ -241,12 +249,12 @@ export default function Coupons() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {coupon.coupon_value || 'N/A'}
+                            {coupon.coupon_value || t('users.notAvailable')}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {coupon.for_user || 'All Users'}
+                            {coupon.for_user || t('coupons.allUsers')}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -257,7 +265,9 @@ export default function Coupons() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {coupon.one_use ? 'One-time' : `${coupon.number_of_uses} uses`}
+                            {coupon.one_use
+                              ? t('coupons.usage.oneTime')
+                              : `${coupon.number_of_uses} ${t('coupons.usage.uses')}`}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -273,29 +283,30 @@ export default function Coupons() {
                             {isActive ? (
                               <>
                                 <CheckCircle className="w-3 h-3" />
-                                Active
+                                {t('coupons.status.active')}
                               </>
                             ) : coupon.is_used ? (
                               <>
                                 <Ticket className="w-3 h-3" />
-                                Used
+                                {t('coupons.status.used')}
                               </>
                             ) : (
                               <>
                                 <XCircle className="w-3 h-3" />
-                                Expired
+                                {t('coupons.status.expired')}
                               </>
                             )}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex gap-2">
-                            <button className="text-[#204FCF] hover:text-[#1a3fa6]">
+                            <button className="text-[#204FCF] hover:text-[#1a3fa6]" title={t('common.edit')}>
                               <Edit className="w-5 h-5" />
                             </button>
                             <button
                               onClick={() => handleDelete(coupon.id)}
                               className="text-red-600 hover:text-red-900"
+                              title={t('common.delete')}
                             >
                               <Trash2 className="w-5 h-5" />
                             </button>
@@ -316,7 +327,7 @@ export default function Coupons() {
         <div className="fixed inset-0 bg-white bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-2xl font-bold text-gray-900">Create New Coupon</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{t('coupons.createTitle')}</h2>
               <button
                 onClick={() => {
                   setShowCreateModal(false);
@@ -347,7 +358,7 @@ export default function Coupons() {
                 {/* Coupon Code */}
                 <div>
                   <label htmlFor="coupon_code" className="block text-sm font-medium text-gray-700 mb-2">
-                    Coupon Code *
+                    {t('coupons.form.code')} *
                   </label>
                   <input
                     type="text"
@@ -363,7 +374,7 @@ export default function Coupons() {
                 {/* Coupon Value */}
                 <div>
                   <label htmlFor="coupon_value" className="block text-sm font-medium text-gray-700 mb-2">
-                    Discount Value
+                    {t('coupons.form.value')}
                   </label>
                   <input
                     type="text"
@@ -371,14 +382,14 @@ export default function Coupons() {
                     value={formData.coupon_value}
                     onChange={(e) => setFormData({ ...formData, coupon_value: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
-                    placeholder="10% or $10"
+                    placeholder={t('coupons.form.valuePlaceholder')}
                   />
                 </div>
 
                 {/* Valid Until */}
                 <div>
                   <label htmlFor="valid_until" className="block text-sm font-medium text-gray-700 mb-2">
-                    Valid Until *
+                    {t('coupons.form.validUntil')} *
                   </label>
                   <input
                     type="date"
@@ -394,7 +405,7 @@ export default function Coupons() {
                 {/* For User */}
                 <div>
                   <label htmlFor="for_user" className="block text-sm font-medium text-gray-700 mb-2">
-                    For User (Optional)
+                    {t('coupons.form.forUser')}
                   </label>
                   <input
                     type="text"
@@ -402,9 +413,9 @@ export default function Coupons() {
                     value={formData.for_user}
                     onChange={(e) => setFormData({ ...formData, for_user: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
-                    placeholder="User ID or email"
+                    placeholder={t('coupons.form.forUserPlaceholder')}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Leave empty for all users</p>
+                  <p className="text-xs text-gray-500 mt-1">{t('coupons.form.forUserHelp')}</p>
                 </div>
               </div>
 
@@ -418,7 +429,7 @@ export default function Coupons() {
                   className="w-5 h-5 text-[#204FCF] border-gray-300 rounded focus:ring-[#204FCF]"
                 />
                 <label htmlFor="one_use" className="text-sm font-medium text-gray-700">
-                  One-time use only
+                  {t('coupons.form.oneTimeUse')}
                 </label>
               </div>
 
@@ -426,7 +437,7 @@ export default function Coupons() {
               {!formData.one_use && (
                 <div>
                   <label htmlFor="number_of_uses" className="block text-sm font-medium text-gray-700 mb-2">
-                    Number of Uses
+                    {t('coupons.form.numberOfUses')}
                   </label>
                   <input
                     type="number"
@@ -457,14 +468,14 @@ export default function Coupons() {
                   }}
                   className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="px-6 py-2 bg-[#204FCF] text-white rounded-lg hover:bg-[#1a3fa6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitting ? 'Creating...' : 'Create Coupon'}
+                  {submitting ? t('coupons.form.creating') : t('coupons.form.create')}
                 </button>
               </div>
             </form>

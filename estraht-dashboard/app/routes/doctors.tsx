@@ -3,12 +3,15 @@ import { Link } from 'react-router';
 import { api, type Doctor } from '../lib/api';
 import { Search, Edit, Trash2, Star, DollarSign, Users, Calendar, Plus, X, Eye } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Doctors() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const { t, isRTL } = useLanguage();
+  const normalizedSearch = searchTerm.toLowerCase();
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -38,15 +41,15 @@ export default function Doctors() {
     }
   };
 
-  const filteredDoctors = doctors.filter(
-    (doctor) =>
-      doctor.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.specialization?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDoctors = doctors.filter((doctor) => {
+    const name = doctor.full_name?.toLowerCase() || '';
+    const email = doctor.email?.toLowerCase() || '';
+    const specialization = doctor.specialization?.toLowerCase() || '';
+    return name.includes(normalizedSearch) || email.includes(normalizedSearch) || specialization.includes(normalizedSearch);
+  });
 
   const handleDelete = async (doctorId: string) => {
-    if (!confirm('Are you sure you want to delete this doctor?')) return;
+    if (!confirm(t('doctors.deleteConfirm'))) return;
 
     try {
       await api.doctors.delete(doctorId);
@@ -97,22 +100,35 @@ export default function Doctors() {
     }
   };
 
+  const getGenderLabel = (gender?: string | null) => {
+    const normalized = gender?.toLowerCase();
+    if (normalized === 'male') return t('doctors.male');
+    if (normalized === 'female') return t('doctors.female');
+    if (normalized === 'other') return t('doctors.other');
+    return gender || t('doctors.notAvailable');
+  };
+
+  const getYearsLabel = (years?: number | null) => {
+    if (!years && years !== 0) return t('doctors.notAvailable');
+    return `${years} ${t('doctors.yearsSuffix')}`;
+  };
+
   return (
     <DashboardLayout>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Doctors Management</h1>
-          <p className="text-gray-600 mt-1">Manage doctors, their profiles, and specializations</p>
+          <h1 className={`text-3xl font-bold text-gray-900 ${isRTL ? 'text-right' : ''}`}>{t('doctors.title')}</h1>
+          <p className={`text-gray-600 mt-1 ${isRTL ? 'text-right' : ''}`}>{t('doctors.subtitle')}</p>
         </div>
-        <button
+        {/* <button
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-2 bg-[#204FCF] text-white px-4 py-2 rounded-lg hover:bg-[#1a3fa6] transition-colors"
         >
           <Plus className="w-5 h-5" />
-          Add Doctor
-        </button>
+          {t('doctors.addDoctor')}
+        </button> */}
       </div>
 
       {/* Stats */}
@@ -120,7 +136,7 @@ export default function Doctors() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Doctors</p>
+              <p className="text-sm text-gray-600">{t('doctors.totalDoctors')}</p>
               <p className="text-2xl font-bold text-gray-900">{doctors.length}</p>
             </div>
             <div className="w-12 h-12 bg-[#e8edfc] rounded-full flex items-center justify-center">
@@ -131,7 +147,7 @@ export default function Doctors() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Avg Rating</p>
+              <p className="text-sm text-gray-600">{t('doctors.avgRating')}</p>
               <p className="text-2xl font-bold text-gray-900">
                 {(
                   doctors.reduce((acc, d) => acc + (d.avg_rating || 0), 0) / doctors.length || 0
@@ -146,7 +162,7 @@ export default function Doctors() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Sessions</p>
+              <p className="text-sm text-gray-600">{t('doctors.totalSessions')}</p>
               <p className="text-2xl font-bold text-gray-900">
                 {doctors.reduce((acc, d) => acc + (d.numb_session || 0), 0)}
               </p>
@@ -159,7 +175,7 @@ export default function Doctors() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Patients</p>
+              <p className="text-sm text-gray-600">{t('doctors.totalPatients')}</p>
               <p className="text-2xl font-bold text-gray-900">
                 {doctors.reduce((acc, d) => acc + (d.numb_patients || 0), 0)}
               </p>
@@ -174,13 +190,19 @@ export default function Doctors() {
       {/* Search Bar */}
       <div className="bg-white p-4 rounded-lg shadow">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search
+            className={`absolute top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 ${
+              isRTL ? 'right-3' : 'left-3'
+            }`}
+          />
           <input
             type="text"
-            placeholder="Search by name, email, or specialization..."
+            placeholder={t('doctors.search')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
+            className={`w-full py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF] ${
+              isRTL ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4'
+            }`}
           />
         </div>
       </div>
@@ -188,35 +210,35 @@ export default function Doctors() {
       {/* Doctors Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading doctors...</div>
+          <div className="p-8 text-center text-gray-500">{t('doctors.loading')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Doctor
+                    {t('doctors.doctor')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact
+                    {t('doctors.contact')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Specialization
+                    {t('doctors.specialization')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Experience
+                    {t('doctors.experience')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rating
+                    {t('doctors.rating')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Price
+                    {t('doctors.price')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Patients
+                    {t('doctors.patients')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    {t('common.actions')}
                   </th>
                 </tr>
               </thead>
@@ -224,7 +246,7 @@ export default function Doctors() {
                 {filteredDoctors.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                      No doctors found
+                      {t('doctors.empty')}
                     </td>
                   </tr>
                 ) : (
@@ -235,7 +257,7 @@ export default function Doctors() {
                           {doctor.profile_img_url ? (
                             <img
                               src={doctor.profile_img_url}
-                              alt={doctor.full_name || 'Doctor'}
+                              alt={doctor.full_name || t('doctors.doctor')}
                               className="w-10 h-10 rounded-full object-cover"
                             />
                           ) : (
@@ -247,25 +269,25 @@ export default function Doctors() {
                           )}
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
-                              {doctor.full_name || 'N/A'}
+                              {doctor.full_name || t('doctors.notAvailable')}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {doctor.gender} {doctor.age ? `(${doctor.age})` : ''}
+                              {getGenderLabel(doctor.gender)} {doctor.age ? `(${doctor.age})` : ''}
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{doctor.email || 'N/A'}</div>
-                        <div className="text-xs text-gray-500">{doctor.phone_number || 'N/A'}</div>
+                        <div className="text-sm text-gray-900">{doctor.email || t('doctors.notAvailable')}</div>
+                        <div className="text-xs text-gray-500">{doctor.phone_number || t('doctors.notAvailable')}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-2 py-1 text-xs font-semibold rounded-full bg-[#e8edfc] text-[#204FCF]">
-                          {doctor.specialization || 'N/A'}
+                          {doctor.specialization || t('doctors.notAvailable')}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {doctor.years_of_exp ? `${doctor.years_of_exp} years` : 'N/A'}
+                        {doctor.years_of_exp ? getYearsLabel(doctor.years_of_exp) : t('doctors.notAvailable')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-1">
@@ -292,17 +314,17 @@ export default function Doctors() {
                           <Link
                             to={`/doctors/${doctor.doctor_id}`}
                             className="text-green-600 hover:text-green-900"
-                            title="View Profile"
+                            title={t('doctors.viewProfile')}
                           >
                             <Eye className="w-5 h-5" />
                           </Link>
-                          <button className="text-[#204FCF] hover:text-[#1a3fa6]" title="Edit">
+                          <button className="text-[#204FCF] hover:text-[#1a3fa6]" title={t('common.edit')}>
                             <Edit className="w-5 h-5" />
                           </button>
                           <button
                             onClick={() => handleDelete(doctor.doctor_id)}
                             className="text-red-600 hover:text-red-900"
-                            title="Delete"
+                            title={t('common.delete')}
                           >
                             <Trash2 className="w-5 h-5" />
                           </button>
@@ -329,7 +351,7 @@ export default function Doctors() {
         >
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="text-xl font-bold text-gray-900">Add New Doctor</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t('doctors.createTitle')}</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="text-gray-500 hover:text-gray-700 transition-colors p-1 hover:bg-gray-100 rounded"
@@ -341,49 +363,49 @@ export default function Doctors() {
             <form onSubmit={handleCreateDoctor} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name <span className="text-red-500">*</span>
+                  <label className={`block text-sm font-medium text-gray-700 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('doctors.fullName')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] ${isRTL ? 'text-right' : ''}`}
                     placeholder="Dr. John Doe"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email <span className="text-red-500">*</span>
+                  <label className={`block text-sm font-medium text-gray-700 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('doctors.email')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] ${isRTL ? 'text-right' : ''}`}
                     placeholder="doctor@example.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
+                  <label className={`block text-sm font-medium text-gray-700 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('doctors.phone')}
                   </label>
                   <input
                     type="tel"
                     value={formData.phone_number}
                     onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] ${isRTL ? 'text-right' : ''}`}
                     placeholder="+1234567890"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Age
+                  <label className={`block text-sm font-medium text-gray-700 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('doctors.age')}
                   </label>
                   <input
                     type="number"
@@ -391,14 +413,14 @@ export default function Doctors() {
                     max="100"
                     value={formData.age}
                     onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] ${isRTL ? 'text-right' : ''}`}
                     placeholder="35"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Gender
+                  <label className={`block text-sm font-medium text-gray-700 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('doctors.gender')}
                   </label>
                   <select
                     value={formData.gender}
@@ -412,43 +434,43 @@ export default function Doctors() {
                       paddingRight: '2.5rem'
                     }}
                   >
-                    <option value="" className="text-gray-900 bg-white">Select gender</option>
-                    <option value="male" className="text-gray-900 bg-white">Male</option>
-                    <option value="female" className="text-gray-900 bg-white">Female</option>
-                    <option value="other" className="text-gray-900 bg-white">Other</option>
+                    <option value="" className="text-gray-900 bg-white">{t('doctors.selectGender')}</option>
+                    <option value="male" className="text-gray-900 bg-white">{t('doctors.male')}</option>
+                    <option value="female" className="text-gray-900 bg-white">{t('doctors.female')}</option>
+                    <option value="other" className="text-gray-900 bg-white">{t('doctors.other')}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Specialization
+                  <label className={`block text-sm font-medium text-gray-700 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('doctors.specialization')}
                   </label>
                   <input
                     type="text"
                     value={formData.specialization}
                     onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] ${isRTL ? 'text-right' : ''}`}
                     placeholder="Cardiology"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Years of Experience
+                  <label className={`block text-sm font-medium text-gray-700 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('doctors.yearsOfExp')}
                   </label>
                   <input
                     type="number"
                     min="0"
                     value={formData.years_of_exp}
                     onChange={(e) => setFormData({ ...formData, years_of_exp: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] ${isRTL ? 'text-right' : ''}`}
                     placeholder="10"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Booking Price
+                  <label className={`block text-sm font-medium text-gray-700 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('doctors.bookingPrice')}
                   </label>
                   <input
                     type="number"
@@ -456,33 +478,33 @@ export default function Doctors() {
                     step="0.01"
                     value={formData.booking_price}
                     onChange={(e) => setFormData({ ...formData, booking_price: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] ${isRTL ? 'text-right' : ''}`}
                     placeholder="100.00"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Profile Image URL
+                  <label className={`block text-sm font-medium text-gray-700 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('doctors.profileImage')}
                   </label>
                   <input
                     type="url"
                     value={formData.profile_img_url}
                     onChange={(e) => setFormData({ ...formData, profile_img_url: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] ${isRTL ? 'text-right' : ''}`}
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bio
+                  <label className={`block text-sm font-medium text-gray-700 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('doctors.bio')}
                   </label>
                   <textarea
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                     rows={4}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF]"
+                    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#204FCF] focus:border-[#204FCF] ${isRTL ? 'text-right' : ''}`}
                     placeholder="Doctor's biography and qualifications..."
                   />
                 </div>
@@ -494,14 +516,14 @@ export default function Doctors() {
                   onClick={() => setShowCreateModal(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
-                <button
+                {/* <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-[#204FCF] text-white rounded-lg hover:bg-[#1a3fa6] transition-colors font-medium"
                 >
-                  Add Doctor
-                </button>
+                  {t('doctors.addDoctor')}
+                </button> */}
               </div>
             </form>
           </div>

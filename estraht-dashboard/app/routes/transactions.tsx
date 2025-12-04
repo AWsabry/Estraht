@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { Search, TrendingUp, TrendingDown, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
+import { useLanguage } from '../contexts/LanguageContext';
 
 type CombinedTransaction = {
   id: string;
@@ -21,6 +22,7 @@ export default function Transactions() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const { t, isRTL } = useLanguage();
 
   useEffect(() => {
     fetchTransactions();
@@ -87,8 +89,8 @@ export default function Transactions() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Transactions</h1>
-          <p className="text-gray-600 mt-1">Monitor all financial transactions and payments</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('transactions.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('transactions.subtitle')}</p>
         </div>
       </div>
 
@@ -97,7 +99,7 @@ export default function Transactions() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Amount</p>
+              <p className="text-sm text-gray-600">{t('transactions.totalAmount') || 'Total Amount'}</p>
               <p className="text-2xl font-bold text-gray-900">${totalAmount.toFixed(2)}</p>
             </div>
             <div className="w-12 h-12 bg-[#e8edfc] rounded-full flex items-center justify-center">
@@ -108,7 +110,7 @@ export default function Transactions() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Successful</p>
+              <p className="text-sm text-gray-600">{t('transactions.successful') || 'Successful'}</p>
               <p className="text-2xl font-bold text-gray-900">{successfulTransactions.length}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -119,7 +121,7 @@ export default function Transactions() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Pending</p>
+              <p className="text-sm text-gray-600">{t('transactions.pending') || 'Pending'}</p>
               <p className="text-2xl font-bold text-gray-900">{pendingTransactions.length}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -130,7 +132,7 @@ export default function Transactions() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Failed</p>
+              <p className="text-sm text-gray-600">{t('transactions.failed') || 'Failed'}</p>
               <p className="text-2xl font-bold text-gray-900">{failedTransactions.length}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
@@ -144,13 +146,19 @@ export default function Transactions() {
       <div className="bg-white p-4 rounded-lg shadow">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search
+              className={`absolute top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 ${
+                isRTL ? 'right-3' : 'left-3'
+              }`}
+            />
             <input
               type="text"
-              placeholder="Search by doctor ID, patient ID, or booking ID..."
+              placeholder={t('transactions.searchPlaceholder') || 'Search by doctor ID, patient ID, or booking ID...'}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
+              className={`w-full py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF] ${
+                isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'
+              }`}
             />
           </div>
           <select
@@ -158,10 +166,10 @@ export default function Transactions() {
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#204FCF]"
           >
-            <option value="all">All Status</option>
-            <option value="success">Success</option>
-            <option value="waiting">Pending</option>
-            <option value="failed">Failed</option>
+            <option value="all">{t('transactions.filter.all') || 'All Status'}</option>
+            <option value="success">{t('transactions.filter.success') || 'Success'}</option>
+            <option value="waiting">{t('transactions.filter.waiting') || 'Pending'}</option>
+            <option value="failed">{t('transactions.filter.failed') || 'Failed'}</option>
           </select>
         </div>
       </div>
@@ -169,32 +177,32 @@ export default function Transactions() {
       {/* Transactions Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading transactions...</div>
+          <div className="p-8 text-center text-gray-500">{t('common.loading')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Transaction ID
+                    {t('transactions.table.id') || 'Transaction ID'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
+                    {t('transactions.table.type') || 'Type'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Doctor ID
+                    {t('transactions.table.doctorId') || 'Doctor ID'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Patient ID
+                    {t('transactions.table.patientId') || 'Patient ID'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
+                    {t('transactions.table.amount') || 'Amount'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t('transactions.table.status') || 'Status'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
+                    {t('transactions.table.date') || 'Date'}
                   </th>
                 </tr>
               </thead>
@@ -202,7 +210,7 @@ export default function Transactions() {
                 {filteredTransactions.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                      No transactions found
+                      {t('transactions.empty') || 'No transactions found'}
                     </td>
                   </tr>
                 ) : (

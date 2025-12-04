@@ -79,16 +79,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     navigate('/login');
   };
 
-  // Ensure order styles are applied correctly for RTL
   const sidebarOrder: CSSProperties = { 
-    order: isRTL ? 1 : 2,
+    order: isRTL ? 2 : 1,
   };
-  console.log(isRTL);
   const mainOrder: CSSProperties = { 
-    order: isRTL ? 1 : 2,
+    order: isRTL ? 2 : 1,
   };
-
-  console.log(mainOrder);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -101,7 +97,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className={`flex items-center justify-between p-4 border-b ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className="flex items-center justify-between p-4 border-b">
             {isSidebarOpen ? (
               <img 
                 src={logoImage} 
@@ -132,7 +128,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     isActive
                       ? 'bg-[#204FCF] text-white'
                       : 'text-gray-700 hover:bg-gray-100'
-                  } ${isRTL ? 'flex-row-reverse' : ''}`}
+                  }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   {isSidebarOpen && (
@@ -150,22 +146,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="relative mb-2 language-selector">
                 <button
                   onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                  className={`w-full flex items-center justify-between gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+                  className="w-full flex items-center justify-between gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="flex items-center gap-2">
                     <Globe className="w-4 h-4" />
                     <span>{language === 'en' ? 'English' : 'العربية'}</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageMenu ? 'rotate-180' : ''}`} />
                 </button>
                 {showLanguageMenu && (
-                  <div className={`absolute bottom-full mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 ${isRTL ? 'left-0 right-auto' : 'left-0 right-0'}`}>
+                  <div className="absolute bottom-full mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 left-0 right-0">
                     <button
                       onClick={() => {
                         setLanguage('en');
                         setShowLanguageMenu(false);
                       }}
-                      className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors ${isRTL ? 'flex-row-reverse' : ''} ${language === 'en' ? 'bg-[#e8edfc]' : ''}`}
+                      className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors ${language === 'en' ? 'bg-[#e8edfc]' : ''}`}
                     >
                       <span>English</span>
                       {language === 'en' && <span className="text-[#204FCF]">✓</span>}
@@ -175,7 +171,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         setLanguage('ar');
                         setShowLanguageMenu(false);
                       }}
-                      className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors ${isRTL ? 'flex-row-reverse' : ''} ${language === 'ar' ? 'bg-[#e8edfc]' : ''}`}
+                      className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors ${language === 'ar' ? 'bg-[#e8edfc]' : ''}`}
                     >
                       <span>العربية</span>
                       {language === 'ar' && <span className="text-[#204FCF]">✓</span>}
@@ -184,7 +180,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
               </div>
             )}
-            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                 <UserCog className="w-6 h-6 text-gray-600" />
               </div>
@@ -200,7 +196,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {isSidebarOpen && (
               <button
                 onClick={handleLogout}
-                className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 {t('common.logout')}
