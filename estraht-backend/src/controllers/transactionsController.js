@@ -1,55 +1,34 @@
 import { supabase } from '../config/supabase.js';
 
-// Get all transactions (combined from transactions_history and payment_history)
+// Get all transactions from payment_history
 export const getAllTransactions = async (req, res) => {
   try {
-    const [txnResult, paymentResult] = await Promise.all([
-      supabase
-        .from('transactions_history')
-        .select('*')
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('payment_history')
-        .select('*')
-        .order('payment_date', { ascending: false })
-    ]);
+    const { data, error } = await supabase
+      .from('payment_history')
+      .select('*')
+      .order('payment_date', { ascending: false });
 
-    if (txnResult.error) throw txnResult.error;
-    if (paymentResult.error) throw paymentResult.error;
+    if (error) throw error;
 
-    const combinedTransactions = [
-      ...(txnResult.data || []).map(t => ({
-        id: t.id,
-        type: 'transaction',
-        doctor_id: t.doctor_id,
-        patient_id: t.patient_id,
-        amount: t.amount,
-        status: t.operation_status,
-        created_at: t.created_at,
-        booking_id: t.booking_id,
-        operation_id: t.operation_id,
-      })),
-      ...(paymentResult.data || []).map(p => ({
-        id: p.id,
-        type: 'payment',
-        doctor_id: p.doctor_id,
-        patient_id: p.patient_id,
-        amount: p.total_amount,
-        status: p.operation_status,
-        created_at: p.payment_date,
-        booking_id: p.booking_id,
-        action_type: p.action_type,
-      }))
-    ];
-
-    combinedTransactions.sort((a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
+    const transactions = (data || []).map(p => ({
+      id: p.id,
+      type: 'payment',
+      doctor_id: p.doctor_id,
+      patient_id: p.patient_id,
+      amount: p.total_amount,
+      status: p.operation_status,
+      created_at: p.payment_date,
+      booking_id: p.booking_id,
+      action_type: p.action_type,
+      payment_gateway: p.payment_gateway || null,
+      payment_currency: p.payment_currency || null,
+      operation_id: p.operation_id || null,
+    }));
 
     res.json({
       success: true,
-      data: combinedTransactions,
-      count: combinedTransactions.length
+      data: transactions,
+      count: transactions.length
     });
   } catch (error) {
     console.error('Error fetching transactions:', error);
@@ -61,13 +40,13 @@ export const getAllTransactions = async (req, res) => {
   }
 };
 
-// Get transactions history only
+// Get transactions history (alias for payment history)
 export const getTransactionsHistory = async (req, res) => {
   try {
     const { data, error } = await supabase
-      .from('transactions_history')
+      .from('payment_history')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('payment_date', { ascending: false });
 
     if (error) throw error;
 
@@ -117,7 +96,7 @@ export const getTransactionById = async (req, res) => {
     const { id } = req.params;
 
     const { data, error } = await supabase
-      .from('transactions_history')
+      .from('payment_history')
       .select('*')
       .eq('id', id)
       .single();
@@ -148,18 +127,16 @@ export const getTransactionById = async (req, res) => {
 // Get transaction statistics
 export const getTransactionStats = async (req, res) => {
   try {
-    const [txnResult, paymentResult] = await Promise.all([
-      supabase.from('transactions_history').select('amount, operation_status'),
-      supabase.from('payment_history').select('total_amount, operation_status')
-    ]);
+    const { data, error } = await supabase
+      .from('payment_history')
+      .select('total_amount, operation_status');
 
-    if (txnResult.error) throw txnResult.error;
-    if (paymentResult.error) throw paymentResult.error;
+    if (error) throw error;
 
-    const allTransactions = [
-      ...(txnResult.data || []).map(t => ({ amount: t.amount, status: t.operation_status })),
-      ...(paymentResult.data || []).map(p => ({ amount: p.total_amount, status: p.operation_status }))
-    ];
+    const allTransactions = (data || []).map(p => ({ 
+      amount: p.total_amount, 
+      status: p.operation_status 
+    }));
 
     const stats = {
       totalTransactions: allTransactions.length,
@@ -189,10 +166,10 @@ export const getTransactionsByDoctor = async (req, res) => {
     const { doctorId } = req.params;
 
     const { data, error } = await supabase
-      .from('transactions_history')
+      .from('payment_history')
       .select('*')
       .eq('doctor_id', doctorId)
-      .order('created_at', { ascending: false });
+      .order('payment_date', { ascending: false });
 
     if (error) throw error;
 
@@ -217,10 +194,10 @@ export const getTransactionsByPatient = async (req, res) => {
     const { patientId } = req.params;
 
     const { data, error } = await supabase
-      .from('transactions_history')
+      .from('payment_history')
       .select('*')
       .eq('patient_id', patientId)
-      .order('created_at', { ascending: false });
+      .order('payment_date', { ascending: false });
 
     if (error) throw error;
 
