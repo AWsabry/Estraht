@@ -193,7 +193,7 @@ export default function Login() {
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-600 mt-6">
-          © 2024 Estraht Medical Platform. All rights reserved.
+          © Estraht Medical Platform. All rights reserved.
         </p>
       </div>
     </div>

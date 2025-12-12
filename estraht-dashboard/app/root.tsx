@@ -34,6 +34,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Estraht Medical Platform - Admin Dashboard" />
+        <meta name="theme-color" content="#204FCF" />
+        {/* Force HTTPS in production - upgrade insecure requests */}
+        {import.meta.env.PROD && (
+          <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+        )}
         <Meta />
         <Links />
         <script
@@ -76,27 +82,50 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
+  let statusCode: number | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
+    statusCode = error.status;
+    message = error.status === 404 ? "404 - Page Not Found" : `Error ${error.status}`;
     details =
       error.status === 404
         ? "The requested page could not be found."
         : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
+  } else if (error && error instanceof Error) {
     details = error.message;
-    stack = error.stack;
+    // Only show stack in development
+    if (import.meta.env.DEV) {
+      stack = error.stack;
+    }
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
+    <main className="min-h-screen bg-gradient-to-br from-[#e8edfc] to-[#FCDED6] flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+        <div className="mb-4">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">{message}</h1>
+          {statusCode && (
+            <p className="text-sm text-gray-500">Status Code: {statusCode}</p>
+          )}
+        </div>
+        <p className="text-gray-600 mb-6">{details}</p>
+        <a
+          href="/"
+          className="inline-block px-6 py-2 bg-[#204FCF] text-white rounded-lg hover:bg-[#1a3fb5] transition-colors"
+        >
+          Go to Dashboard
+        </a>
+        {stack && import.meta.env.DEV && (
+          <details className="mt-6 text-left">
+            <summary className="cursor-pointer text-sm text-gray-500 mb-2">
+              Error Details (Development Only)
+            </summary>
+            <pre className="w-full p-4 bg-gray-100 rounded overflow-x-auto text-xs">
+              <code>{stack}</code>
+            </pre>
+          </details>
+        )}
+      </div>
     </main>
   );
 }

@@ -5,15 +5,7 @@ import routes from "./routes/index.js";
 const app = express();
 
 // CORS Configuration
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? (process.env.ALLOWED_ORIGINS?.split(',') || [])
-    : ['http://localhost:5173', 'http://localhost:5000'], // Development origins
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 
 // Security Headers
 app.use((req, res, next) => {

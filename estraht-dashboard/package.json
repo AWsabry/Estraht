@@ -5,8 +5,9 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "start": "PORT=3031 react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc",
+    "preview": "react-router-serve ./build/server/index.js"
   },
   "dependencies": {
     "@react-router/node": "^7.9.2",

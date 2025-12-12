@@ -1,23 +1,54 @@
 // API configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-// Generic API fetch helper
-async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || 'API request failed');
+// Ensure proper handling of environment variable
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  // Check if the env var is actually set and not undefined string
+  if (envUrl && envUrl !== 'undefined' && envUrl.trim()) {
+    return envUrl.trim();
   }
+  return 'https://backend.estaraht.com/api';
+};
 
-  return data;
+const API_BASE_URL = getApiBaseUrl();
+
+// Generic API fetch helper with improved error handling
+async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    });
+
+    // Handle non-JSON responses
+    let data;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      throw new Error(text || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(data.message || data.error || `API request failed: ${response.statusText}`);
+    }
+
+    return data;
+  } catch (error) {
+    // Handle network errors
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to the server. Please check your connection.');
+    }
+    // Re-throw known errors
+    if (error instanceof Error) {
+      throw error;
+    }
+    // Handle unknown errors
+    throw new Error('An unexpected error occurred');
+  }
 }
 
 // API client
